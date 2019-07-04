@@ -1,0 +1,54 @@
+
+
+https://hackernoon.com/understanding-architecture-of-lstm-cell-from-scratch-with-code-8da40f0b71f4
+https://medium.com/@aidangomez/let-s-do-this-f9b699de31d9
+https://towardsdatascience.com/back-to-basics-deriving-back-propagation-on-simple-rnn-lstm-feat-aidan-gomez-c7f286ba973d
+
+https://www.oreilly.com/ideas/introduction-to-lstms-with-tensorflow
+
+https://github.com/GarrettHoffman/lstm-oreilly
+  > "Stock Market Sentiment with LSTMs and TensorFlo"
+
+https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/LSTMCell
+
+https://adventuresinmachinelearning.com/keras-lstm-tutorial/
+
+time distributed:
+https://machinelearningmastery.com/timedistributed-layer-for-long-short-term-memory-networks-in-python/
+
+embedding:
+https://www.tensorflow.org/api_docs/python/tf/keras/layers/Embedding
+https://www.tensorflow.org/api_docs/python/tf/nn/embedding_lookup
+
+=====
+
+time distribtued does not seem nearly as bad as embedding
+so we gotta do this embedding thing
+
+maybe we just need to do word2vec or transfer learning or smething.
+
+> https://towardsdatascience.com/deep-learning-4-embedding-layers-f9a02d55ac12
+> so embedding creates this lookup table, where each word is mapped to some vector
+  > instead of one hot encodings, we use vectors [.32, .02, .48, .21, .56, .15]
+  > its faster to just look up encoding rather than do matrix mult
+  
+> https://skymind.ai/wiki/word2vec
+> word to vec is like this autoencoder structure i guess. 2 layer network.
+
+=====
+
+seems like we can get away without using an embedding layer tho.
+> word to vec
+> make problem just the character problem.
+
+especially since we can call tf gradients on :
+> https://www.tensorflow.org/api_docs/python/tf/nn/embedding_lookup
+> or we can probably even call the defined gradient function for it.
+
+well acutally if we want to implement this in hardware we have to know how it works 
+
+=====
+
+for now tho, i do think that we can probably just do the character problem and work without the embedding thing
+> https://cs224d.stanford.edu/reports/weiyi.pdf
+> binarized lstm works i guess.

@@ -1,0 +1,8 @@
+*__pycache__
+*.results
+*.npy
+*.pyc
+nohup.out
+*.jpg
+*.png
+*.tgz

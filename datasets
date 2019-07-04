@@ -1,0 +1,52 @@
+https://www.tensorflow.org/api_docs/python/tf/keras/datasets
+there is a boston housing dataset 
+and imdb 
+and reuters ... which is apparently a word dataset. 
+or maybe not idk.
+
+https://www.tensorflow.org/api_docs/python/tf/keras/datasets/boston_housing
+
+=====
+
+https://towardsdatascience.com/understanding-lstm-and-its-quick-implementation-in-keras-for-sentiment-analysis-af410fd85b47
+https://colah.github.io/posts/2015-08-Understanding-LSTMs/
+https://adventuresinmachinelearning.com/keras-lstm-tutorial/
+
+https://www.youtube.com/watch?v=9zhrxE5PQgY
+
+> https://towardsdatascience.com/building-a-next-word-predictor-in-tensorflow-e7e681d4f03f
+
+boom.
+we are looking for NLP 
+> basic stuff in NLP.
+>> why was that so had to find lol.
+
+didnt realize the application was kinda cool to.
+
+longer we wait for gym, the better i think. just sucks we dont have any food.
+
+>> https://machinelearningmastery.com/text-generation-lstm-recurrent-neural-networks-python-keras/
+
+so we have our example, but we arnt really sure whats going on here. 
+need to read the post i guess.
+
+>>> lets start understanding LSTMs.
+so keep scouring for the best keras examples 
+want to do this next word prediction 
+
+then we can try speech or w.e.
+
+=====
+
+wow, why did we never try caltech101 ? 
+https://skymind.ai/wiki/open-datasets
+this looks great
+
+https://skymind.ai/wiki/open-datasets
+> Speech Datasets
+> bunch of nice data sets we can use
+
+so we do want to do speech ? 
+or we want to do translation ? 
+what was the one where we load a ton of text and predict next word ? 
+  we did some dumb tutorial with this.
