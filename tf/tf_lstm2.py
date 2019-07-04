@@ -134,10 +134,11 @@ with tf.Session() as session:
         symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
 
         _, acc, loss, onehot_pred = session.run([optimizer, accuracy, cost, pred], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
-        a, b = session.run([outputs, states], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
-        
-        print ('outputs', np.shape(a))
-        print ('states', np.shape(b))
+        a, b, c = session.run([inputs, outputs, states], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
+
+        print ('inputs', np.shape(a))
+        print ('outputs', np.shape(b))
+        print ('states', np.shape(c))
         assert(False)
         
         loss_total += loss

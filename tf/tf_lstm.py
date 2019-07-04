@@ -137,8 +137,9 @@ with tf.Session() as session:
         symbols_out_onehot[dictionary[str(training_data[offset+n_input])]] = 1.0
         symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
 
-        _, acc, loss, onehot_pred = session.run([optimizer, accuracy, cost, pred], \
-                                                feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
+        _, acc, loss, onehot_pred = session.run([optimizer, accuracy, cost, pred], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
+        print (np.shape(onehot_pred))
+      
         loss_total += loss
         acc_total += acc
         if (step+1) % display_step == 0:

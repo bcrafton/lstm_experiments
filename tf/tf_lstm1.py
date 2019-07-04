@@ -115,6 +115,9 @@ inputs = tf.split(inputs, n_input, 1)
 cell1 = rnn.BasicLSTMCell(n_hidden)
 cell2 = rnn.BasicLSTMCell(n_hidden)
 
+zero_state1 = cell1.zero_state(batch_size=1, dtype=tf.float32)
+zero_state2 = cell2.zero_state(batch_size=1, dtype=tf.float32)
+
 with tf.variable_scope('l1'):
     outputs1, states1 = tf.nn.static_rnn(cell=cell1, inputs=inputs, dtype=tf.float32)
     
@@ -159,12 +162,14 @@ with tf.Session() as session:
         symbols_out_onehot[dictionary[str(training_data[offset+n_input])]] = 1.0
         symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
 
-        _, acc, loss, onehot_pred, a, b, c, d, e = session.run([optimizer, accuracy, cost, pred, inputs, outputs1, states1, outputs2, states2], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
+        _, acc, loss, onehot_pred, a, b, c, d, e, f, g = session.run([optimizer, accuracy, cost, pred, inputs, outputs1, states1, outputs2, states2, zero_state1, zero_state2], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
         print ('inputs',   np.shape(a))
         print ('outputs1', np.shape(b))
         print ('states1',  np.shape(c))
         print ('outputs2', np.shape(d))
         print ('states2',  np.shape(e))
+        print ('zero_state1', np.shape(f))
+        print ('zero_state2', np.shape(g))
         assert (False)
         
         loss_total += loss
