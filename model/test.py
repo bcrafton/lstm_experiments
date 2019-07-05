@@ -28,3 +28,5 @@ back3_3 = back3
 back3 = np.stack((back3_1, back3_2, back3_3), axis=0)
 
 back2 = l2.backward(out1, out2, back3, cache1)
+back1 = l1.backward(inputs, out1, back2, cache1)
+

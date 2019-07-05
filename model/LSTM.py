@@ -120,7 +120,7 @@ class LSTM(Layer):
         s = cache['s'] 
         h = cache['h'] 
         
-        lds = []
+        lds = [None] * self.time_size
         ldx = []
         
         for t in range(self.time_size-1, -1, -1):
@@ -146,21 +146,19 @@ class LSTM(Layer):
                 df = ds * s[t-1] * dsigmoid(f[t]) 
                 do = dh * tanh(s[t]) * dsigmoid(o[t]) 
 
-            print (np.shape(self.Wa_x), np.shape(da))
-
-            dout_a = self.Wa_x.T @ da
-            dout_i = self.Wi_x.T @ di
-            dout_f = self.Wf_x.T @ df
-            dout_o = self.Wo_x.T @ do
+            dout_a = da @ self.Wa_h.T
+            dout_i = di @ self.Wi_h.T
+            dout_f = df @ self.Wf_h.T
+            dout_o = do @ self.Wo_h.T
             dout = dout_a + dout_i + dout_f + dout_o
             
-            dx_a = self.Wa_x.T @ da
-            dx_i = self.Wi_x.T @ di
-            dx_f = self.Wf_x.T @ df
-            dx_o = self.Wo_x.T @ do
+            dx_a = da @ self.Wa_x.T
+            dx_i = di @ self.Wi_x.T
+            dx_f = df @ self.Wf_x.T
+            dx_o = do @ self.Wo_x.T
             dx = dx_a + dx_i + dx_f + dx_o
             
-            lds.append(ds)
+            lds[t] = ds
             ldx.append(dx)
 
         return ldx
