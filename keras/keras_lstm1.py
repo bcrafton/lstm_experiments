@@ -109,6 +109,8 @@ use_dropout=True
 #################################
 # showing difference between time distributed and not time distributed
 # return sequence and not return sequence.
+# this site = key.
+# https://machinelearningmastery.com/timedistributed-layer-for-long-short-term-memory-networks-in-python/
 
 #'''
 model = Sequential()
