@@ -145,13 +145,18 @@ class LSTM(Layer):
         dWf_h = np.zeros_like(self.Wf_h)
         dWo_h = np.zeros_like(self.Wo_h)
 
+        dba = np.zeros_like(self.ba)
+        dbi = np.zeros_like(self.bi)
+        dbf = np.zeros_like(self.bf)
+        dbo = np.zeros_like(self.bo)
+
         for t in range(self.time_size-1, -1, -1):
             if t == 0:
                 dh = DO[t] + dout
-                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t]
+                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t+1]
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
-                df = ds
+                df = np.zeros_like(da)
                 do = dh * tanh(s[t]) * dsigmoid(o[t]) 
             elif t == self.time_size-1:
                 dh = DO[t]
@@ -162,7 +167,7 @@ class LSTM(Layer):
                 do = dh * tanh(s[t]) * dsigmoid(o[t]) 
             else:
                 dh = DO[t] + dout
-                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t]
+                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t+1]
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
                 df = ds * s[t-1] * dsigmoid(f[t]) 
@@ -185,6 +190,11 @@ class LSTM(Layer):
             dWf_x += AI[t].T @ df 
             dWo_x += AI[t].T @ do 
             
+            dba += np.sum(da, axis=0)
+            dbi += np.sum(di, axis=0)
+            dbf += np.sum(df, axis=0) 
+            dbo += np.sum(do, axis=0)
+            
             if t > 0:
                 dWa_h += h[t-1].T @ da
                 dWi_h += h[t-1].T @ di 
@@ -195,14 +205,20 @@ class LSTM(Layer):
             ldx.append(dx)
 
         self.Wa_x -= self.lr * dWa_x
-        self.Wi_x -= self.lr * dWa_x
-        self.Wf_x -= self.lr * dWa_x
-        self.Wo_x -= self.lr * dWa_x
+        self.Wi_x -= self.lr * dWi_x
+        self.Wf_x -= self.lr * dWf_x
+        self.Wo_x -= self.lr * dWo_x
         
         self.Wa_h -= self.lr * dWa_h
         self.Wi_h -= self.lr * dWi_h
         self.Wf_h -= self.lr * dWf_h
         self.Wo_h -= self.lr * dWo_h
+        
+        self.ba -= self.lr * dba
+        self.bi -= self.lr * dbi
+        self.bf -= self.lr * dbf
+        self.bo -= self.lr * dbo
+
 
         return ldx
 
