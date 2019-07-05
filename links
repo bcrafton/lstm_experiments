@@ -52,3 +52,19 @@ well acutally if we want to implement this in hardware we have to know how it wo
 for now tho, i do think that we can probably just do the character problem and work without the embedding thing
 > https://cs224d.stanford.edu/reports/weiyi.pdf
 > binarized lstm works i guess.
+
+=====
+
+https://towardsdatascience.com/lstm-by-example-using-tensorflow-feb0c1968537
+https://github.com/roatienza/Deep-Learning-Experiments/blob/master/Experiments/Tensorflow/RNN/rnn_words.py
+
+https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/LSTMCell
+https://www.tensorflow.org/api_docs/python/tf/nn/static_rnn
+https://www.tensorflow.org/api_docs/python/tf/split
+
+https://adventuresinmachinelearning.com/keras-lstm-tutorial/
+
+
+
+
+

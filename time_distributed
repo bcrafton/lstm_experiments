@@ -1,0 +1,76 @@
+
+===================
+
+> https://machinelearningmastery.com/timedistributed-layer-for-long-short-term-memory-networks-in-python/
+
+===================
+
+Many-to-One LSTM for Sequence Prediction (without  TimeDistributed)
+
+X = seq.reshape(1, length, 1)
+>> y = seq.reshape(1, length)
+# define LSTM configuration
+n_neurons = length
+n_batch = 1
+n_epoch = 500
+# create LSTM
+model = Sequential()
+>> model.add(LSTM(n_neurons, input_shape=(length, 1)))
+>> model.add(Dense(length))
+model.compile(loss='mean_squared_error', optimizer='adam')
+	
+===================
+	
+many to one:
+"The LSTM units have been crippled and will each output a single value, providing a vector of 5 values as inputs to the fully connected layer. The time dimension or sequence information has been thrown away and collapsed into a vector of 5 values."
+
+output is a vector, not a sequence.
+
+===================
+
+dont understand how 5 neurons over 5 time steps = 5 value vector.
+in our tf example, we just throw out all but the last time step.
+
+> pred = tf.matmul(outputs2[-1], weights['out']) + biases['out']
+
+which could be fine, but dont think this is what time distributed article is saying many to one should be.
+
+> https://www.tensorflow.org/api_docs/python/tf/keras/layers/LSTM
+> return_sequences: Boolean. Whether to return the last output. in the output sequence, or the full sequence.
+  > so keras will just return only the last output by default.
+  > so instead of collapse, it shud say just throws is out.
+
+> so this all adds up then it seems.
+
+===================
+	
+Many-to-Many LSTM for Sequence Prediction (with TimeDistributed)
+
+X = seq.reshape(1, length, 1)
+>> y = seq.reshape(1, length, 1)
+# define LSTM configuration
+n_neurons = length
+n_batch = 1
+n_epoch = 1000
+# create LSTM
+model = Sequential()
+>> model.add(LSTM(n_neurons, input_shape=(length, 1), return_sequences=True))
+>> model.add(TimeDistributed(Dense(1)))
+model.compile(loss='mean_squared_error', optimizer='adam')
+
+===================
+
+many to many:
+input = 3d
+ouput = 3d
+
+> We can define the LSTM hidden layer to return sequences rather than single values by setting the “return_sequences” argument to true.
+
+> This has the effect of each LSTM unit returning a sequence of 5 outputs, one for each time step in the input data, instead of single output value as in the previous example.
+
+> The single output value in the output layer is key. It highlights that we intend to output one time step from the sequence for each time step in the input. It just so happens that we will process 5 time steps of the input sequence at a time.
+
+> The TimeDistributed achieves this trick by applying the same Dense layer (same weights) to the LSTMs outputs for one time step at a time. In this way, the output layer only needs one connection to each LSTM unit (plus one bias).
+
+===================
+
