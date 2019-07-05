@@ -35,16 +35,31 @@ class LSTM(Layer):
         self.lr = lr
         self.return_sequences = return_sequences
         
+        '''
         self.Wa_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
         self.Wi_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
         self.Wf_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
         self.Wo_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
+        '''
+        high = np.sqrt(6. / (self.input_size + self.output_size))
+        self.Wa_x = np.random.uniform(low=-high, high=high, size=(self.input_size, self.output_size))
+        self.Wi_x = np.random.uniform(low=-high, high=high, size=(self.input_size, self.output_size))
+        self.Wf_x = np.random.uniform(low=-high, high=high, size=(self.input_size, self.output_size))
+        self.Wo_x = np.random.uniform(low=-high, high=high, size=(self.input_size, self.output_size))
+        
 
+        '''
         self.Wa_h = np.random.normal(loc=0.0, scale=0.01, size=(self.output_size, self.output_size))
         self.Wi_h = np.random.normal(loc=0.0, scale=0.01, size=(self.output_size, self.output_size))
         self.Wf_h = np.random.normal(loc=0.0, scale=0.01, size=(self.output_size, self.output_size))
         self.Wo_h = np.random.normal(loc=0.0, scale=0.01, size=(self.output_size, self.output_size))
-
+        '''
+        high = np.sqrt(6. / (self.output_size + self.output_size))
+        self.Wa_h = np.random.uniform(low=-high, high=high, size=(self.output_size, self.output_size))
+        self.Wi_h = np.random.uniform(low=-high, high=high, size=(self.output_size, self.output_size))
+        self.Wf_h = np.random.uniform(low=-high, high=high, size=(self.output_size, self.output_size))
+        self.Wo_h = np.random.uniform(low=-high, high=high, size=(self.output_size, self.output_size))
+        
         self.ba = np.zeros(shape=self.output_size)
         self.bi = np.zeros(shape=self.output_size)
         self.bf = np.zeros(shape=self.output_size)

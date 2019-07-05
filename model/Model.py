@@ -25,7 +25,8 @@ class Model:
             else:
                 A[ii], C[ii] = l.forward(A[ii-1])
 
-        N = np.shape(X)[0]
+        # [T, B, N_in]
+        N = np.shape(X)[1]
         E = (softmax(A[self.num_layers-1]) - Y) / N
         correct = np.argmax(A[self.num_layers-1], axis=1) == np.argmax(Y, axis=1)
         correct_sum = np.sum(correct)
