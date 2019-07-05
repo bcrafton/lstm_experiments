@@ -68,14 +68,6 @@ n_hidden = 512
 x = tf.placeholder("float", [None, n_input, 1])
 y = tf.placeholder("float", [None, vocab_size])
 
-# RNN output node weights and biases
-weights = {
-    'out': tf.Variable(tf.random_normal([n_hidden, vocab_size]))
-}
-biases = {
-    'out': tf.Variable(tf.random_normal([vocab_size]))
-}
-
 #########################
 
 '''
@@ -112,19 +104,22 @@ pred = RNN(x, weights, biases)
 inputs = tf.reshape(x, [-1, n_input])
 inputs = tf.split(inputs, n_input, 1)
 
-cell1 = rnn.BasicLSTMCell(n_hidden)
-cell2 = rnn.BasicLSTMCell(n_hidden)
-
-zero_state1 = cell1.zero_state(batch_size=1, dtype=tf.float32)
-zero_state2 = cell2.zero_state(batch_size=1, dtype=tf.float32)
-
 with tf.variable_scope('l1'):
+    cell1 = rnn.BasicLSTMCell(n_hidden)
     outputs1, states1 = tf.nn.static_rnn(cell=cell1, inputs=inputs, dtype=tf.float32)
     
 with tf.variable_scope('l2'):
+    cell2 = rnn.BasicLSTMCell(n_hidden)
     outputs2, states2 = tf.nn.static_rnn(cell=cell2, inputs=outputs1, dtype=tf.float32)
 
-pred = tf.matmul(outputs2[-1], weights['out']) + biases['out']
+with tf.variable_scope('l3'):
+    weights = {'out': tf.Variable(tf.random_normal([n_hidden, vocab_size]))}
+    biases = {'out': tf.Variable(tf.random_normal([vocab_size]))}
+    pred = tf.matmul(outputs2[-1], weights['out']) + biases['out']
+
+weights_l1 = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='l1')
+weights_l2 = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='l2')
+weights_l3 = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='l3')
 
 #########################
 
@@ -162,15 +157,18 @@ with tf.Session() as session:
         symbols_out_onehot[dictionary[str(training_data[offset+n_input])]] = 1.0
         symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
 
-        _, acc, loss, onehot_pred, a, b, c, d, e, f, g = session.run([optimizer, accuracy, cost, pred, inputs, outputs1, states1, outputs2, states2, zero_state1, zero_state2], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
-        print ('inputs',   np.shape(a))
-        print ('outputs1', np.shape(b))
-        print ('states1',  np.shape(c))
-        print ('outputs2', np.shape(d))
-        print ('states2',  np.shape(e))
-        print ('zero_state1', np.shape(f))
-        print ('zero_state2', np.shape(g))
-        assert (False)
+        _, acc, loss, onehot_pred, l1, l2, l3 = session.run([optimizer, accuracy, cost, pred, weights_l1, weights_l2, weights_l3], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
+        
+        for w in l1:
+            if len(np.shape(w)) == 2:
+                print ('l1', np.shape(w), np.std(w), np.mean(w))
+        for w in l2:
+            if len(np.shape(w)) == 2:
+                print ('l2', np.shape(w), np.std(w), np.mean(w))
+        for w in l3:
+            if len(np.shape(w)) == 2:
+                print ('l3', np.shape(w), np.std(w), np.mean(w))
+        assert(False)
         
         loss_total += loss
         acc_total += acc
