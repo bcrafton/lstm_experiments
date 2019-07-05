@@ -56,7 +56,7 @@ dictionary, reverse_dictionary = build_dataset(training_data)
 vocab_size = len(dictionary)
 
 # Parameters
-learning_rate = 0.001
+learning_rate = 0.0001
 training_iters = 50000
 display_step = 1000
 n_input = 3
@@ -130,7 +130,7 @@ pred = tf.matmul(outputs2[-1], weights['out']) + biases['out']
 
 # Loss and optimizer
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
-optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(cost)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost)
 
 # Model evaluation
 correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
@@ -162,6 +162,7 @@ with tf.Session() as session:
         symbols_out_onehot[dictionary[str(training_data[offset+n_input])]] = 1.0
         symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
 
+        '''
         _, acc, loss, onehot_pred, a, b, c, d, e, f, g = session.run([optimizer, accuracy, cost, pred, inputs, outputs1, states1, outputs2, states2, zero_state1, zero_state2], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
         print ('inputs',   np.shape(a))
         print ('outputs1', np.shape(b))
@@ -171,6 +172,9 @@ with tf.Session() as session:
         print ('zero_state1', np.shape(f))
         print ('zero_state2', np.shape(g))
         assert (False)
+        '''
+        
+        _, acc, loss, onehot_pred = session.run([optimizer, accuracy, cost, pred], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
         
         loss_total += loss
         acc_total += acc

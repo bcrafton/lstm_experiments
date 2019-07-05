@@ -35,6 +35,7 @@ class LSTM(Layer):
         self.lr = lr
         self.return_sequences = return_sequences
         
+        '''
         self.Wa_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
         self.Wi_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
         self.Wf_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
@@ -49,6 +50,22 @@ class LSTM(Layer):
         self.bi = np.zeros(shape=self.output_size)
         self.bf = np.zeros(shape=self.output_size)
         self.bo = np.zeros(shape=self.output_size)
+        '''
+        
+        self.Wa_x = np.array([[0.45], [0.25]])
+        self.Wi_x = np.array([[0.95], [0.80]])
+        self.Wf_x = np.array([[0.70], [0.45]])
+        self.Wo_x = np.array([[0.60], [0.40]])
+
+        self.Wa_h = np.array([[0.15]])
+        self.Wi_h = np.array([[0.8]])
+        self.Wf_h = np.array([[0.1]])
+        self.Wo_h = np.array([[0.25]])
+
+        self.ba = np.array([0.20])
+        self.bi = np.array([0.65])
+        self.bf = np.array([0.15])
+        self.bo = np.array([0.10])
 
     ###################################################################
         
@@ -195,14 +212,20 @@ class LSTM(Layer):
             ldx.append(dx)
 
         self.Wa_x -= self.lr * dWa_x
-        self.Wi_x -= self.lr * dWa_x
-        self.Wf_x -= self.lr * dWa_x
-        self.Wo_x -= self.lr * dWa_x
+        self.Wi_x -= self.lr * dWi_x
+        self.Wf_x -= self.lr * dWf_x
+        self.Wo_x -= self.lr * dWo_x
         
         self.Wa_h -= self.lr * dWa_h
         self.Wi_h -= self.lr * dWi_h
         self.Wf_h -= self.lr * dWf_h
         self.Wo_h -= self.lr * dWo_h
+        
+        dWx = np.concatenate((dWa_x, dWi_x, dWf_x, dWo_x), axis=1)
+        dWh = np.concatenate((dWa_h, dWi_h, dWf_h, dWo_h), axis=1)
+        
+        print (dWx.T)
+        print (dWh.T)
 
         return ldx
 
