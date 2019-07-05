@@ -109,10 +109,10 @@ while step < training_iters:
     step += 1
     offset += (n_input+1)
     
-    if (step % 100) == 0:
-        acc = correct_total * 1.0 / step
+    if (step % 1000) == 0:
+        acc = correct_total / 1000.0
         print ('%d/%d: %f' % (step, training_iters, acc))
-
+        correct_total = 0
 
 
 
