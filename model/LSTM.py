@@ -97,20 +97,73 @@ class LSTM(Layer):
             h = tanh(s) * o
             lh.append(h)
 
-        # [2, B, O]
-        states = s
         # [T, B, O]
         outputs = np.stack(lh, axis=0)
-        
-        return (outputs, states)
 
-    # shud we combine these two ? 
-    # think it makes way more sense to combine them ...
-    def backward(self, AI, AO, DO):
-        assert (False)
+        cache = {}
+        cache['a'] = la
+        cache['i'] = li
+        cache['f'] = lf
+        cache['o'] = lo
+        cache['s'] = ls
+        cache['h'] = lh
         
-    def train(self, AI, AO, DO):
-        assert (False)
+        return outputs, cache
+
+
+    # combining backward and train together
+    def backward(self, AI, AO, DO, cache):
+        a = cache['a'] 
+        i = cache['i'] 
+        f = cache['f'] 
+        o = cache['o'] 
+        s = cache['s'] 
+        h = cache['h'] 
+        
+        lds = []
+        ldx = []
+        
+        for t in range(self.time_size-1, -1, -1):
+            if t == 0:
+                dh = DO[t] + dout
+                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t]
+                da = ds * i[t] * dtanh(a[t])
+                di = ds * a[t] * dsigmoid(i[t]) 
+                df = ds
+                do = dh * tanh(s[t]) * dsigmoid(o[t]) 
+            elif t == self.time_size-1:
+                dh = DO[t]
+                ds = dh * o[t] * dtanh(tanh(s[t]))
+                da = ds * i[t] * dtanh(a[t])
+                di = ds * a[t] * dsigmoid(i[t]) 
+                df = ds * s[t-1] * dsigmoid(f[t]) 
+                do = dh * tanh(s[t]) * dsigmoid(o[t]) 
+            else:
+                dh = DO[t] + dout
+                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t]
+                da = ds * i[t] * dtanh(a[t])
+                di = ds * a[t] * dsigmoid(i[t]) 
+                df = ds * s[t-1] * dsigmoid(f[t]) 
+                do = dh * tanh(s[t]) * dsigmoid(o[t]) 
+
+            print (np.shape(self.Wa_x), np.shape(da))
+
+            dout_a = self.Wa_x.T @ da
+            dout_i = self.Wi_x.T @ di
+            dout_f = self.Wf_x.T @ df
+            dout_o = self.Wo_x.T @ do
+            dout = dout_a + dout_i + dout_f + dout_o
+            
+            dx_a = self.Wa_x.T @ da
+            dx_i = self.Wi_x.T @ di
+            dx_f = self.Wf_x.T @ df
+            dx_o = self.Wo_x.T @ do
+            dx = dx_a + dx_i + dx_f + dx_o
+            
+            lds.append(ds)
+            ldx.append(dx)
+
+        return ldx
 
     ###################################################################
 
