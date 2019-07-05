@@ -162,6 +162,11 @@ class LSTM(Layer):
         dWf_h = np.zeros_like(self.Wf_h)
         dWo_h = np.zeros_like(self.Wo_h)
 
+        dba = np.zeros_like(self.ba)
+        dbi = np.zeros_like(self.bi)
+        dbf = np.zeros_like(self.bf)
+        dbo = np.zeros_like(self.bo)
+
         for t in range(self.time_size-1, -1, -1):
             if t == 0:
                 dh = DO[t] + dout
@@ -226,6 +231,11 @@ class LSTM(Layer):
             dWf_x += AI[t].T @ df 
             dWo_x += AI[t].T @ do 
             
+            dba += np.sum(da, axis=0)
+            dbi += np.sum(di, axis=0)
+            dbf += np.sum(df, axis=0) 
+            dbo += np.sum(do, axis=0)
+            
             if t > 0:
                 dWa_h += h[t-1].T @ da
                 dWi_h += h[t-1].T @ di 
@@ -245,11 +255,18 @@ class LSTM(Layer):
         self.Wf_h -= self.lr * dWf_h
         self.Wo_h -= self.lr * dWo_h
         
+        self.ba -= self.lr * dba
+        self.bi -= self.lr * dbi
+        self.bf -= self.lr * dbf
+        self.bo -= self.lr * dbo
+
         dWx = np.concatenate((dWa_x, dWi_x, dWf_x, dWo_x), axis=1)
         dWh = np.concatenate((dWa_h, dWi_h, dWf_h, dWo_h), axis=1)
+        db = np.concatenate((dba, dbi, dbf, dbo), axis=0)
         
         print (dWx.T)
         print (dWh.T)
+        print (db)
 
         return ldx
 
