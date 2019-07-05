@@ -60,7 +60,9 @@ class LSTM(Layer):
     ###################################################################
 
     def forward(self, X):
-        assert(np.shape(X) == (self.time_size, self.batch_size, self.input_size))
+        if (np.shape(X) != (self.time_size, self.batch_size, self.input_size)):
+            print (np.shape(X))
+            assert(np.shape(X) == (self.time_size, self.batch_size, self.input_size))
     
         la = []
         li = []

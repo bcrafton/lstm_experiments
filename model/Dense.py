@@ -39,14 +39,14 @@ class Dense(Layer):
     def forward(self, X):
         Z = X @ self.weights + self.bias
         A = self.activation.forward(Z)
-        return A
+        return A, None
             
-    def backward(self, AI, AO, DO):
+    def backward(self, AI, AO, DO, cache):
         DO = DO * self.activation.gradient(AO)
         DI = DO @ self.weights.T
         return DI
         
-    def train(self, AI, AO, DO):
+    def train(self, AI, AO, DO, cache):
         if not self._train:
             return []
             
