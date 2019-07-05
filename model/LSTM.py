@@ -168,7 +168,7 @@ class LSTM(Layer):
                 ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t+1]
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
-                df = ds
+                df = np.zeros_like(da)
                 do = dh * tanh(s[t]) * dsigmoid(o[t]) 
                 
                 '''

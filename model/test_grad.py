@@ -31,8 +31,8 @@ y1 = 1.25
 
 ###############################
 
-x = np.array([[x0], [x1]]); print ('x', np.shape(x))
-y = np.array([[y0], [y1]]); print ('y', np.shape(y))
+x = np.array([[x0], [x1]]); # print ('x', np.shape(x))
+y = np.array([[y0], [y1]]); # print ('y', np.shape(y))
 
 l1 = LSTM(input_shape=(2, 1, 2), size=1)
 out, cache = l1.forward(X=x)
