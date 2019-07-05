@@ -28,10 +28,11 @@ def dsigmoid(x):
 
 class LSTM(Layer):
 
-    def __init__(self, input_shape, size):
+    def __init__(self, input_shape, size, return_sequences=True):
         self.input_shape = input_shape
         self.time_size, self.batch_size, self.input_size = self.input_shape
         self.output_size = size
+        self.return_sequences = return_sequences
 
         self.Wa_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
         self.Wi_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
@@ -108,11 +109,19 @@ class LSTM(Layer):
         cache['s'] = ls
         cache['h'] = lh
         
-        return outputs, cache
+        if self.return_sequences:
+            return outputs, cache
+        else:
+            return outputs[-1], cache
 
 
     # combining backward and train together
     def backward(self, AI, AO, DO, cache):
+        if not self.return_sequences:
+            reshape_DO = np.zeros(shape=(self.time_size, self.batch_size, self.output_size))
+            reshape_DO[-1] = DO
+            DO = reshape_DO
+    
         a = cache['a'] 
         i = cache['i'] 
         f = cache['f'] 
