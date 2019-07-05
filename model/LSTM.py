@@ -132,6 +132,16 @@ class LSTM(Layer):
         lds = [None] * self.time_size
         ldx = []
         
+        dWa_x = np.zeros_like(self.Wa_x)
+        dWi_x = np.zeros_like(self.Wi_x)
+        dWf_x = np.zeros_like(self.Wf_x)
+        dWo_x = np.zeros_like(self.Wo_x)
+
+        dWa_h = np.zeros_like(self.Wa_h)
+        dWi_h = np.zeros_like(self.Wi_h)
+        dWf_h = np.zeros_like(self.Wf_h)
+        dWo_h = np.zeros_like(self.Wo_h)
+
         for t in range(self.time_size-1, -1, -1):
             if t == 0:
                 dh = DO[t] + dout
@@ -167,6 +177,17 @@ class LSTM(Layer):
             dx_o = do @ self.Wo_x.T
             dx = dx_a + dx_i + dx_f + dx_o
             
+            dWa_x += AI[t].T @ da
+            dWi_x += AI[t].T @ di 
+            dWf_x += AI[t].T @ df 
+            dWo_x += AI[t].T @ do 
+            
+            if t > 0:
+                dWa_h += h[t-1].T @ da
+                dWi_h += h[t-1].T @ di 
+                dWf_h += h[t-1].T @ df 
+                dWo_h += h[t-1].T @ do 
+                
             lds[t] = ds
             ldx.append(dx)
 
