@@ -165,19 +165,43 @@ class LSTM(Layer):
         for t in range(self.time_size-1, -1, -1):
             if t == 0:
                 dh = DO[t] + dout
-                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t]
+                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t+1]
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
                 df = ds
                 do = dh * tanh(s[t]) * dsigmoid(o[t]) 
+                
+                '''
+                # it was f[t] not f[t+1]
+                print (dh)
+                print (o[t])
+                print (dtanh(tanh(s[t])))
+                print (lds[t+1])
+                print (f[t+1])
+                '''
+                '''
+                # broken bc of ds.
+                print (ds)
+                print (i[t])
+                print (dtanh(a[t]))
+                '''
+                '''
+                # all the broken
+                print (da)
+                print (di)
+                print (df)
+                print (do)
+                print (AI[t].T)
+                '''
             elif t == self.time_size-1:
                 dh = DO[t]
                 ds = dh * o[t] * dtanh(tanh(s[t]))
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
                 df = ds * s[t-1] * dsigmoid(f[t]) 
-                do = dh * tanh(s[t]) * dsigmoid(o[t]) 
+                do = dh * tanh(s[t]) * dsigmoid(o[t])
             else:
+                assert(False)
                 dh = DO[t] + dout
                 ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t]
                 da = ds * i[t] * dtanh(a[t])
