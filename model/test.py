@@ -88,10 +88,9 @@ offset = random.randint(0,n_input+1)
 end_offset = n_input + 1
 acc_total = 0
 loss_total = 0
+correct_total = 0
 
 while step < training_iters:
-    print ('%d/%d' % (step, training_iters))
-    
     # Generate a minibatch. Add some randomness on selection process.
     if offset > (len(training_data)-end_offset):
         offset = random.randint(0, n_input+1)
@@ -104,9 +103,16 @@ while step < training_iters:
     symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
 
     # _, acc, loss, onehot_pred = session.run([optimizer, accuracy, cost, pred], feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
-    model.train(X=symbols_in_keys, Y=symbols_out_onehot)        
-
+    correct_sum = model.train(X=symbols_in_keys, Y=symbols_out_onehot)
+    correct_total += correct_sum
+    
     step += 1
     offset += (n_input+1)
     
+    if (step % 100) == 0:
+        acc = correct_total * 1.0 / step
+        print ('%d/%d: %f' % (step, training_iters, acc))
+
+
+
 

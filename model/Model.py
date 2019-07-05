@@ -27,6 +27,8 @@ class Model:
 
         N = np.shape(X)[0]
         E = (softmax(A[self.num_layers-1]) - Y) / N
+        correct = np.argmax(A[self.num_layers-1], axis=1) == np.argmax(Y, axis=1)
+        correct_sum = np.sum(correct)
 
         for ii in range(self.num_layers-1, -1, -1):
             l = self.layers[ii]
@@ -37,6 +39,8 @@ class Model:
                 D[ii] = l.backward(X, A[ii], D[ii+1], C[ii])
             else:
                 D[ii] = l.backward(A[ii-1], A[ii], D[ii+1], C[ii])
+                
+        return correct_sum
               
     def predict(self, X):
         A = [None] * self.num_layers

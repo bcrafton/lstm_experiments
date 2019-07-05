@@ -28,12 +28,13 @@ def dsigmoid(x):
 
 class LSTM(Layer):
 
-    def __init__(self, input_shape, size, return_sequences=True):
+    def __init__(self, input_shape, size, lr=0.001, return_sequences=True):
         self.input_shape = input_shape
         self.time_size, self.batch_size, self.input_size = self.input_shape
         self.output_size = size
+        self.lr = lr
         self.return_sequences = return_sequences
-
+        
         self.Wa_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
         self.Wi_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
         self.Wf_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
@@ -192,6 +193,16 @@ class LSTM(Layer):
                 
             lds[t] = ds
             ldx.append(dx)
+
+        self.Wa_x -= self.lr * dWa_x
+        self.Wi_x -= self.lr * dWa_x
+        self.Wf_x -= self.lr * dWa_x
+        self.Wo_x -= self.lr * dWa_x
+        
+        self.Wa_h -= self.lr * dWa_h
+        self.Wi_h -= self.lr * dWi_h
+        self.Wf_h -= self.lr * dWf_h
+        self.Wo_h -= self.lr * dWo_h
 
         return ldx
 
