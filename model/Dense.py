@@ -52,8 +52,7 @@ class Dense(Layer):
     def backward(self, AI, AO, DO, cache):
         DO = DO * self.activation.gradient(AO)
         DI = DO @ self.weights.T
-        
-        DO = DO * self.activation.gradient(AO)
+
         DW = AI.T @ DO
         DB = np.sum(DO, axis=0)
         
