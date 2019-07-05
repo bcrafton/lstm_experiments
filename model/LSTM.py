@@ -5,6 +5,8 @@ import math
 
 from Layer import Layer 
 
+from init_matrix import init_matrix
+
 ########################################
 
 def tanh(x):
@@ -28,37 +30,23 @@ def dsigmoid(x):
 
 class LSTM(Layer):
 
-    def __init__(self, input_shape, size, lr=0.001, return_sequences=True):
+    def __init__(self, input_shape, size, init='glorot_normal', lr=0.001, return_sequences=True):
         self.input_shape = input_shape
         self.time_size, self.batch_size, self.input_size = self.input_shape
         self.output_size = size
+        self.init = init
         self.lr = lr
         self.return_sequences = return_sequences
         
-        '''
-        self.Wa_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
-        self.Wi_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
-        self.Wf_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
-        self.Wo_x = np.random.normal(loc=0.0, scale=0.01, size=(self.input_size, self.output_size))
-        '''
-        high = np.sqrt(6. / (self.input_size + self.output_size))
-        self.Wa_x = np.random.uniform(low=-high, high=high, size=(self.input_size, self.output_size))
-        self.Wi_x = np.random.uniform(low=-high, high=high, size=(self.input_size, self.output_size))
-        self.Wf_x = np.random.uniform(low=-high, high=high, size=(self.input_size, self.output_size))
-        self.Wo_x = np.random.uniform(low=-high, high=high, size=(self.input_size, self.output_size))
-        
+        self.Wa_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
+        self.Wi_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
+        self.Wf_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
+        self.Wo_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
 
-        '''
-        self.Wa_h = np.random.normal(loc=0.0, scale=0.01, size=(self.output_size, self.output_size))
-        self.Wi_h = np.random.normal(loc=0.0, scale=0.01, size=(self.output_size, self.output_size))
-        self.Wf_h = np.random.normal(loc=0.0, scale=0.01, size=(self.output_size, self.output_size))
-        self.Wo_h = np.random.normal(loc=0.0, scale=0.01, size=(self.output_size, self.output_size))
-        '''
-        high = np.sqrt(6. / (self.output_size + self.output_size))
-        self.Wa_h = np.random.uniform(low=-high, high=high, size=(self.output_size, self.output_size))
-        self.Wi_h = np.random.uniform(low=-high, high=high, size=(self.output_size, self.output_size))
-        self.Wf_h = np.random.uniform(low=-high, high=high, size=(self.output_size, self.output_size))
-        self.Wo_h = np.random.uniform(low=-high, high=high, size=(self.output_size, self.output_size))
+        self.Wa_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
+        self.Wi_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
+        self.Wf_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
+        self.Wo_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
         
         self.ba = np.zeros(shape=self.output_size)
         self.bi = np.zeros(shape=self.output_size)
