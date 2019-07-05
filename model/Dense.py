@@ -5,6 +5,8 @@ from Layer import Layer
 from Activation import Activation
 from Activation import Linear
 
+from init_matrix import init_matrix
+
 class Dense(Layer):
 
     def __init__(self, input_shape, size, activation=None, init=None, lr=0.001):
@@ -16,23 +18,7 @@ class Dense(Layer):
         self.lr = lr
 
         self.bias = np.zeros(shape=size)
-
-        if self.init == 'zero':
-            self.weights = np.zeros(shape=(self.input_shape, self.size))
-        elif self.init == 'sqrt_fan_in':
-            sqrt_fan_in = np.sqrt(self.input_shape)
-            self.weights = np.random.uniform(low=-1.0/sqrt_fan_in, high=1.0/sqrt_fan_in, size=(self.input_shape, self.size))
-        elif self.init == 'glorot_uniform':
-            high = np.sqrt(6. / (self.input_shape + self.size))
-            low = -high
-            self.weights = np.random.uniform(low=low, high=high, size=(self.input_shape, self.size))
-        elif self.init == 'glorot_normal':
-            scale = np.sqrt(2. / (self.input_shape + self.size))
-            self.weights = np.random.normal(loc=0.0, scale=scale, size=(self.input_shape, self.size))
-        elif self.init == None:
-            self.weights = np.random.normal(loc=0.0, scale=1., size=(self.input_shape, self.size))
-        else:
-            assert(False)
+        self.weights = init_matrix(size=(self.input_shape, self.size), init=self.init)
 
     ###################################################################
         
