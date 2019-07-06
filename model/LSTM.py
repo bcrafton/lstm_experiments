@@ -136,7 +136,7 @@ class LSTM(Layer):
         h = cache['h'] 
         
         lds = [None] * self.time_size
-        ldx = []
+        ldx = [None] * self.time_size
         
         dWa_x = np.zeros_like(self.Wa_x)
         dWi_x = np.zeros_like(self.Wi_x)
@@ -205,7 +205,7 @@ class LSTM(Layer):
                 dWo_h += h[t-1].T @ do 
                 
             lds[t] = ds
-            ldx.append(dx)
+            ldx[t] = dx
 
         self.Wa_x -= self.lr * dWa_x
         self.Wi_x -= self.lr * dWi_x
