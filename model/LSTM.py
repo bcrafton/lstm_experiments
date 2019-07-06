@@ -71,6 +71,7 @@ class LSTM(Layer):
         # could do:
         # la = [None] * self.time_size
         # but this is fine, bc forward direction.
+        # concerned bc appending lists created bug in backwards direction
         la = []
         li = []
         lf = []
