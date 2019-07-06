@@ -68,6 +68,9 @@ class LSTM(Layer):
             print (np.shape(X))
             assert(np.shape(X) == (self.time_size, self.batch_size, self.input_size))
     
+        # could do:
+        # la = [None] * self.time_size
+        # but this is fine, bc forward direction.
         la = []
         li = []
         lf = []
