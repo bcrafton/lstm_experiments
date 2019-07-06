@@ -150,7 +150,7 @@ class LSTM(Layer):
         h = cache['h'] 
         
         lds = [None] * self.time_size
-        ldx = []
+        ldx = [None] * self.time_size
         
         dWa_x = np.zeros_like(self.Wa_x)
         dWi_x = np.zeros_like(self.Wi_x)
@@ -204,11 +204,11 @@ class LSTM(Layer):
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
                 df = ds * s[t-1] * dsigmoid(f[t]) 
-                do = dh * tanh(s[t]) * dsigmoid(o[t])
+                do = dh * tanh(s[t]) * dsigmoid(o[t]) 
             else:
                 assert(False)
                 dh = DO[t] + dout
-                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t]
+                ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t+1]
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
                 df = ds * s[t-1] * dsigmoid(f[t]) 
@@ -243,7 +243,7 @@ class LSTM(Layer):
                 dWo_h += h[t-1].T @ do 
                 
             lds[t] = ds
-            ldx.append(dx)
+            ldx[t] = dx
 
         self.Wa_x -= self.lr * dWa_x
         self.Wi_x -= self.lr * dWi_x
@@ -264,10 +264,15 @@ class LSTM(Layer):
         dWh = np.concatenate((dWa_h, dWi_h, dWf_h, dWo_h), axis=1)
         db = np.concatenate((dba, dbi, dbf, dbo), axis=0)
         
+        print ('dWx')
         print (dWx.T)
+        print ('dWh')
         print (dWh.T)
+        print ('db')
         print (db)
-
+        print ('dx')
+        print (ldx)
+        print (ldx[0])
         return ldx
 
     ###################################################################

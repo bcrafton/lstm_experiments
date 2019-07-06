@@ -40,6 +40,8 @@ out, cache = l1.forward(X=x)
 out = np.reshape(out, [2, 1])
 do = out - y
 
-l1.backward(AI=x, AO=out, DO=do, cache=cache)
+di = l1.backward(AI=x, AO=out, DO=do, cache=cache)
 
+# print ('di')
+# print (di)
 
