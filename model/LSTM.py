@@ -68,16 +68,6 @@ class LSTM(Layer):
             print (np.shape(X))
             assert(np.shape(X) == (self.time_size, self.batch_size, self.input_size))
     
-        # could do:
-        # la = [None] * self.time_size
-        # but this is fine, bc forward direction.
-        # concerned bc appending lists created bug in backwards direction
-        old_la = []
-        old_li = []
-        old_lf = []
-        old_lo = []
-        old_ls = []
-        old_lh = []
         la = [None] * self.time_size
         li = [None] * self.time_size
         lf = [None] * self.time_size
@@ -99,10 +89,6 @@ class LSTM(Layer):
                 f = sigmoid(x @ self.Wf_x + lh[t-1] @ self.Wf_h + self.bf)
                 o = sigmoid(x @ self.Wo_x + lh[t-1] @ self.Wo_h + self.bo)
 
-            old_la.append(a)
-            old_li.append(i)
-            old_lf.append(f)
-            old_lo.append(o)
             la[t] = a
             li[t] = i
             lf[t] = f
@@ -110,31 +96,13 @@ class LSTM(Layer):
             
             if t == 0:
                 s = a * i               
-                old_ls.append(s)
             else:
                 s = a * i + ls[t-1] * f
-                old_ls.append(s)
                 
             h = tanh(s) * o
-            old_lh.append(h)
 
             ls[t] = s
             lh[t] = h
-
-            if t > 0:
-                assert(np.all(la[t-1] == old_la[t-1]))
-                assert(np.all(li[t-1] == old_li[t-1]))
-                assert(np.all(lf[t-1] == old_lf[t-1]))
-                assert(np.all(lo[t-1] == old_lo[t-1]))
-                assert(np.all(ls[t-1] == old_ls[t-1]))
-                assert(np.all(lh[t-1] == old_lh[t-1]))
-
-            assert(np.all(la[t] == old_la[t]))
-            assert(np.all(li[t] == old_li[t]))
-            assert(np.all(lf[t] == old_lf[t]))
-            assert(np.all(lo[t] == old_lo[t]))
-            assert(np.all(ls[t] == old_ls[t]))
-            assert(np.all(lh[t] == old_lh[t]))
 
         # [T, B, O]
         outputs = np.stack(lh, axis=0)
