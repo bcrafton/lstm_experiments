@@ -115,10 +115,19 @@ if use_dropout:
 model.add(TimeDistributed(Dense(vocabulary)))
 model.add(Activation('softmax'))
 
-def perplexity(y_true, y_pred):
+'''
+def perplexity_avg(y_true, y_pred):
     cross_entropy = keras.backend.categorical_crossentropy(y_true, y_pred)
     perplexity = keras.backend.sum(keras.backend.exp(cross_entropy))
-    return perplexity
+    return perplexity / batch_size
+'''
+
+def perplexity(y_true, y_pred):
+    cross_entropy = keras.backend.categorical_crossentropy(y_true, y_pred)
+    perplexity = keras.backend.exp(cross_entropy)
+    # shape(cross_entropy), shape(perplexity) = [20 30]
+    loss = keras.backend.sum(keras.backend.mean(perplexity, axis=0))
+    return loss
 
 optimizer = Adam()
 # model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
