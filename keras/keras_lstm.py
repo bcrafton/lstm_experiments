@@ -8,6 +8,7 @@ from keras.layers import LSTM
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 from keras.callbacks import ModelCheckpoint
+import keras
 import numpy as np
 import argparse
 
@@ -58,11 +59,12 @@ def load_data():
     test_data = file_to_word_ids(test_path, word_to_id)
     vocabulary = len(word_to_id)
     reversed_dictionary = dict(zip(word_to_id.values(), word_to_id.keys()))
-
+    '''
     print(train_data[:5])
     print(word_to_id)
     print(vocabulary)
     print(" ".join([reversed_dictionary[x] for x in train_data[:10]]))
+    '''
     return train_data, valid_data, test_data, vocabulary, reversed_dictionary
 
 train_data, valid_data, test_data, vocabulary, reversed_dictionary = load_data()
@@ -113,12 +115,15 @@ if use_dropout:
 model.add(TimeDistributed(Dense(vocabulary)))
 model.add(Activation('softmax'))
 
-# print ('vocabulary', vocabulary, 'hidden_size', hidden_size, 'num_steps', num_steps)
+def perplexity(y_true, y_pred):
+    cross_entropy = keras.backend.categorical_crossentropy(y_true, y_pred)
+    perplexity = keras.backend.sum(keras.backend.exp(cross_entropy))
+    return perplexity
 
 optimizer = Adam()
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
+# model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
+model.compile(loss=perplexity, optimizer='adam', metrics=['categorical_accuracy', perplexity])
 
-print(model.summary())
 checkpointer = ModelCheckpoint(filepath=data_path + '/model-{epoch:02d}.hdf5', verbose=1)
 num_epochs = 50
 if args.run_opt == 1:
