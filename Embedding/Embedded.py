@@ -47,13 +47,14 @@ class Embedded(Layer):
     def gv(self, AI, AO, DO):
         # one of the 4 set branches:
         # https://github.com/bcrafton/dfa/blob/set_conv_sign/SparseFC.py
+        
+        # gonna need one of these two.
         # https://www.tensorflow.org/api_docs/python/tf/scatter_update
         # https://www.tensorflow.org/api_docs/python/tf/scatter_nd
-        # scatter update looks like what we want.
-        # might actually need to gather before hand unfortunately ... not sure it does +=.
+        # think these are same thing ... they dont do +=
     
-        assert(False)
-        # return [(DW, self.weights)]
+        DW = tf.scatter_update(tf.zeros_like(w), AI, DO)
+        return [(DW, self.weights)]
 
     ###################################################################
         
