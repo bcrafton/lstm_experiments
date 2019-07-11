@@ -1,7 +1,6 @@
 
 import tensorflow as tf
 import numpy as np
-import math
 
 from Layer import Layer 
 
@@ -10,17 +9,14 @@ from init_matrix import init_matrix
 ########################################
 
 def tanh(x):
-    return np.tanh(x)
+    return tf.tanh(x)
 
 def dtanh(x):
     # wrt A, not Z
-    return 1 - np.power(x, 2)
-    
-    # wrt Z, not A
-    # return 1. - np.tanh(x) ** 2.
+    return 1 - tf.pow(x, 2)
 
 def sigmoid(x):
-    return 1.0 / (1.0 + np.exp(-x))
+    return tf.sigmoid(x)
 
 def dsigmoid(x):
     # wrt A, not Z
@@ -30,28 +26,42 @@ def dsigmoid(x):
 
 class LSTM(Layer):
 
-    def __init__(self, input_shape, size, init='glorot_normal', lr=0.001, return_sequences=True):
+    def __init__(self, input_shape, size, init='glorot_normal', return_sequences=True):
         self.input_shape = input_shape
         self.time_size, self.batch_size, self.input_size = self.input_shape
         self.output_size = size
         self.init = init
-        self.lr = lr
         self.return_sequences = return_sequences
         
-        self.Wa_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
-        self.Wi_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
-        self.Wf_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
-        self.Wo_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
+        Wa_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
+        Wi_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
+        Wf_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
+        Wo_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
 
-        self.Wa_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
-        self.Wi_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
-        self.Wf_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
-        self.Wo_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
+        Wa_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
+        Wi_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
+        Wf_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
+        Wo_h = init_matrix(size=(self.output_size, self.output_size), init=self.init)
         
-        self.ba = np.zeros(shape=self.output_size)
-        self.bi = np.zeros(shape=self.output_size)
-        self.bf = np.zeros(shape=self.output_size)
-        self.bo = np.zeros(shape=self.output_size)
+        ba = np.zeros(shape=self.output_size)
+        bi = np.zeros(shape=self.output_size)
+        bf = np.zeros(shape=self.output_size)
+        bo = np.zeros(shape=self.output_size)
+        
+        self.Wa_x = tf.Variable(Wa_x, dtype=tf.float32)
+        self.Wi_x = tf.Variable(Wi_x, dtype=tf.float32)
+        self.Wf_x = tf.Variable(Wf_x, dtype=tf.float32)
+        self.Wo_x = tf.Variable(Wo_x, dtype=tf.float32)
+
+        self.Wa_h = tf.Variable(Wa_h, dtype=tf.float32)
+        self.Wi_h = tf.Variable(Wi_h, dtype=tf.float32)
+        self.Wf_h = tf.Variable(Wf_h, dtype=tf.float32)
+        self.Wo_h = tf.Variable(Wo_h, dtype=tf.float32)
+        
+        self.ba = tf.Variable(ba, dtype=tf.float32)
+        self.bi = tf.Variable(bi, dtype=tf.float32)
+        self.bf = tf.Variable(bf, dtype=tf.float32)
+        self.bo = tf.Variable(bo, dtype=tf.float32)
 
     ###################################################################
         
@@ -64,10 +74,13 @@ class LSTM(Layer):
     ###################################################################
 
     def forward(self, X):
+        # put some tensorflow assertion here to check the shape
+        '''
         if (np.shape(X) != (self.time_size, self.batch_size, self.input_size)):
             print (np.shape(X))
             assert(np.shape(X) == (self.time_size, self.batch_size, self.input_size))
-    
+        '''
+        
         la = [None] * self.time_size
         li = [None] * self.time_size
         lf = [None] * self.time_size
@@ -79,15 +92,15 @@ class LSTM(Layer):
             x = X[t]
             
             if t == 0:
-                a = tanh(   x @ self.Wa_x + self.ba) 
-                i = sigmoid(x @ self.Wi_x + self.bi) 
-                f = sigmoid(x @ self.Wf_x + self.bf)
-                o = sigmoid(x @ self.Wo_x + self.bo) 
+                a = tanh(   tf.matmul(x, self.Wa_x) + self.ba) 
+                i = sigmoid(tf.matmul(x, self.Wi_x) + self.bi) 
+                f = sigmoid(tf.matmul(x, self.Wf_x) + self.bf)
+                o = sigmoid(tf.matmul(x, self.Wo_x) + self.bo) 
             else:
-                a = tanh(   x @ self.Wa_x + lh[t-1] @ self.Wa_h + self.ba)
-                i = sigmoid(x @ self.Wi_x + lh[t-1] @ self.Wi_h + self.bi)
-                f = sigmoid(x @ self.Wf_x + lh[t-1] @ self.Wf_h + self.bf)
-                o = sigmoid(x @ self.Wo_x + lh[t-1] @ self.Wo_h + self.bo)
+                a = tanh(   tf.matmul(x, self.Wa_x) + tf.matmul(lh[t-1], self.Wa_h) + self.ba)
+                i = sigmoid(tf.matmul(x, self.Wi_x) + tf.matmul(lh[t-1], self.Wi_h) + self.bi)
+                f = sigmoid(tf.matmul(x, self.Wf_x) + tf.matmul(lh[t-1], self.Wf_h) + self.bf)
+                o = sigmoid(tf.matmul(x, self.Wo_x) + tf.matmul(lh[t-1], self.Wo_h) + self.bo)
 
             la[t] = a
             li[t] = i
@@ -105,7 +118,7 @@ class LSTM(Layer):
             lh[t] = h
 
         # [T, B, O]
-        outputs = np.stack(lh, axis=0)
+        outputs = tf.stack(lh, axis=0)
 
         cache = {}
         cache['a'] = la
@@ -124,8 +137,8 @@ class LSTM(Layer):
     # combining backward and train together
     def backward(self, AI, AO, DO, cache):
         if not self.return_sequences:
-            reshape_DO = np.zeros(shape=(self.time_size, self.batch_size, self.output_size))
-            reshape_DO[-1] = DO
+            reshape_DO = tf.zeros(shape=(self.time_size, self.batch_size, self.output_size))
+            reshape_DO = tf.scatter_update(reshape_DO, self.time_size, DO)
             DO = reshape_DO
     
         a = cache['a'] 
@@ -138,20 +151,20 @@ class LSTM(Layer):
         lds = [None] * self.time_size
         ldx = [None] * self.time_size
         
-        dWa_x = np.zeros_like(self.Wa_x)
-        dWi_x = np.zeros_like(self.Wi_x)
-        dWf_x = np.zeros_like(self.Wf_x)
-        dWo_x = np.zeros_like(self.Wo_x)
+        dWa_x = tf.zeros_like(self.Wa_x)
+        dWi_x = tf.zeros_like(self.Wi_x)
+        dWf_x = tf.zeros_like(self.Wf_x)
+        dWo_x = tf.zeros_like(self.Wo_x)
 
-        dWa_h = np.zeros_like(self.Wa_h)
-        dWi_h = np.zeros_like(self.Wi_h)
-        dWf_h = np.zeros_like(self.Wf_h)
-        dWo_h = np.zeros_like(self.Wo_h)
+        dWa_h = tf.zeros_like(self.Wa_h)
+        dWi_h = tf.zeros_like(self.Wi_h)
+        dWf_h = tf.zeros_like(self.Wf_h)
+        dWo_h = tf.zeros_like(self.Wo_h)
 
-        dba = np.zeros_like(self.ba)
-        dbi = np.zeros_like(self.bi)
-        dbf = np.zeros_like(self.bf)
-        dbo = np.zeros_like(self.bo)
+        dba = tf.zeros_like(self.ba)
+        dbi = tf.zeros_like(self.bi)
+        dbf = tf.zeros_like(self.bf)
+        dbo = tf.zeros_like(self.bo)
 
         for t in range(self.time_size-1, -1, -1):
             if t == 0:
@@ -159,7 +172,7 @@ class LSTM(Layer):
                 ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t+1]
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
-                df = np.zeros_like(da)
+                df = tf.zeros_like(da)
                 do = dh * tanh(s[t]) * dsigmoid(o[t]) 
             elif t == self.time_size-1:
                 dh = DO[t]
@@ -176,54 +189,44 @@ class LSTM(Layer):
                 df = ds * s[t-1] * dsigmoid(f[t]) 
                 do = dh * tanh(s[t]) * dsigmoid(o[t]) 
 
-            dout_a = da @ self.Wa_h.T
-            dout_i = di @ self.Wi_h.T
-            dout_f = df @ self.Wf_h.T
-            dout_o = do @ self.Wo_h.T
+            dout_a = tf.matmul(da, tf.transpose(self.Wa_h))
+            dout_i = tf.matmul(di, tf.transpose(self.Wi_h))
+            dout_f = tf.matmul(df, tf.transpose(self.Wf_h))
+            dout_o = tf.matmul(do, tf.transpose(self.Wo_h))
             dout = dout_a + dout_i + dout_f + dout_o
             
-            dx_a = da @ self.Wa_x.T
-            dx_i = di @ self.Wi_x.T
-            dx_f = df @ self.Wf_x.T
-            dx_o = do @ self.Wo_x.T
+            dx_a = tf.matmul(da, tf.transpose(self.Wa_x))
+            dx_i = tf.matmul(di, tf.transpose(self.Wi_x))
+            dx_f = tf.matmul(df, tf.transpose(self.Wf_x))
+            dx_o = tf.matmul(do, tf.transpose(self.Wo_x))
             dx = dx_a + dx_i + dx_f + dx_o
             
-            dWa_x += AI[t].T @ da
-            dWi_x += AI[t].T @ di 
-            dWf_x += AI[t].T @ df 
-            dWo_x += AI[t].T @ do 
+            dWa_x += tf.matmul(tf.transpose(AI[t]), da)
+            dWi_x += tf.matmul(tf.transpose(AI[t]), di)
+            dWf_x += tf.matmul(tf.transpose(AI[t]), df)
+            dWo_x += tf.matmul(tf.transpose(AI[t]), do)
             
-            dba += np.sum(da, axis=0)
-            dbi += np.sum(di, axis=0)
-            dbf += np.sum(df, axis=0) 
-            dbo += np.sum(do, axis=0)
+            dba += tf.sum(da, axis=0)
+            dbi += tf.sum(di, axis=0)
+            dbf += tf.sum(df, axis=0) 
+            dbo += tf.sum(do, axis=0)
             
             if t > 0:
-                dWa_h += h[t-1].T @ da
-                dWi_h += h[t-1].T @ di 
-                dWf_h += h[t-1].T @ df 
-                dWo_h += h[t-1].T @ do 
+                dWa_h += tf.matmul(tf.transpose(h[t-1]), da)
+                dWi_h += tf.matmul(tf.transpose(h[t-1]), di)
+                dWf_h += tf.matmul(tf.transpose(h[t-1]), df)
+                dWo_h += tf.matmul(tf.transpose(h[t-1]), do)
                 
             lds[t] = ds
             ldx[t] = dx
 
-        self.Wa_x -= self.lr * dWa_x
-        self.Wi_x -= self.lr * dWi_x
-        self.Wf_x -= self.lr * dWf_x
-        self.Wo_x -= self.lr * dWo_x
-        
-        self.Wa_h -= self.lr * dWa_h
-        self.Wi_h -= self.lr * dWi_h
-        self.Wf_h -= self.lr * dWf_h
-        self.Wo_h -= self.lr * dWo_h
-        
-        self.ba -= self.lr * dba
-        self.bi -= self.lr * dbi
-        self.bf -= self.lr * dbf
-        self.bo -= self.lr * dbo
+        dw = [
+        (dWa_x, self.Wa_x), (dWi_x, self.Wi_x), (dWf_x, self.Wf_x), (dWo_x, self.Wo_x),
+        (dWa_h, self.Wa_h), (dWi_h, self.Wi_h), (dWf_h, self.Wf_h), (dWo_h, self.Wo_h),
+        (dba, self.ba), (dbi, self.bi), (dbf, self.bf), (dbo, self.bo)
+        ]
 
-
-        return ldx
+        return ldx, dw
 
     ###################################################################
 

@@ -1,5 +1,6 @@
 
 import numpy as np
+import tensorflow as tf
 
 from Layer import Layer 
 from Activation import Activation
@@ -17,8 +18,11 @@ class Dense(Layer):
         self.activation = Linear() if activation == None else activation
         self.lr = lr
 
-        self.bias = np.zeros(shape=size)
-        self.weights = init_matrix(size=(self.input_shape, self.size), init=self.init)
+        bias = np.zeros(shape=size)
+        weights = init_matrix(size=(self.input_shape, self.size), init=self.init)
+        
+        self.bias = tf.Variable(bias, dtype=tf.float32)
+        self.weights = tf.Variable(weights, dtype=tf.float32)
 
     ###################################################################
         
@@ -31,21 +35,18 @@ class Dense(Layer):
     ###################################################################
 
     def forward(self, X):
-        Z = X @ self.weights + self.bias
+        Z = tf.matmul(X, self.weights) + self.bias
         A = self.activation.forward(Z)
         return A, None
             
     def backward(self, AI, AO, DO, cache):
         DO = DO * self.activation.gradient(AO)
-        DI = DO @ self.weights.T
+        DI = tf.matmul(DO, tf.transpose(self.weights))
 
-        DW = AI.T @ DO
-        DB = np.sum(DO, axis=0)
+        DW = tf.matmul(tf.transpose(AI), DO)
+        DB = tf.reduce_sum(DO, axis=0)
         
-        self.weights -= self.lr * DW
-        self.bias -= self.lr * DB
-        
-        return DI
+        return DI, [(DW, self.weights), (DB, self.bias)]
         
     ###################################################################
 

@@ -1,5 +1,6 @@
 
 import numpy as np
+import tensorflow as tf
 
 class Activation(object):
     def forward(self, x):
@@ -13,10 +14,10 @@ class Sigmoid(Activation):
         pass
 
     def forward(self, x):
-        return 1.0 / (1.0 + np.exp(-x))
+        return tf.sigmoid(x)
 
     def gradient(self, x):
-        return x * (1 - x)
+        return tf.multiply(x, tf.subtract(1.0, x))
         
 class Relu(Activation):
 
@@ -24,11 +25,11 @@ class Relu(Activation):
         pass
 
     def forward(self, x):
-        return (x > 0.0) * x
+        return tf.nn.relu(x)
 
     def gradient(self, x):
         # pretty sure this gradient works for A and Z
-        return (x > 0.0)
+        return tf.cast(x > 0.0, dtype=tf.float32)
 
 class Tanh(Activation):
 # https://theclevermachine.wordpress.com/tag/tanh-function/ 
@@ -37,11 +38,11 @@ class Tanh(Activation):
         pass
 
     def forward(self, x):
-        return np.tanh(x)
+        return tf.tanh(x)
 
     def gradient(self, x):
         # this is gradient wtf A, not Z
-        return 1 - np.power(x, 2)
+        return 1 - tf.pow(x, 2)
         
 class Linear(Activation):
 
@@ -52,7 +53,7 @@ class Linear(Activation):
         return x 
 
     def gradient(self, x):
-        return np.ones_like(x)
+        return tf.ones(shape=tf.shape(x))
        
         
         
