@@ -33,6 +33,8 @@ class LSTM(Layer):
         self.init = init
         self.return_sequences = return_sequences
         
+        # print (self.time_size, self.batch_size, self.input_size, self.output_size)
+        
         Wa_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
         Wi_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
         Wf_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
@@ -137,9 +139,9 @@ class LSTM(Layer):
     # combining backward and train together
     def backward(self, AI, AO, DO, cache):
         if not self.return_sequences:
-            reshape_DO = tf.zeros(shape=(self.time_size, self.batch_size, self.output_size))
-            reshape_DO = tf.scatter_update(reshape_DO, self.time_size, DO)
-            DO = reshape_DO
+            zeros = tf.zeros(shape=(self.time_size - 1, self.batch_size, self.output_size))
+            DO = tf.reshape(DO, (1, self.batch_size, self.output_size))
+            DO = tf.concat((zeros, DO), axis=0)
     
         a = cache['a'] 
         i = cache['i'] 
@@ -206,10 +208,10 @@ class LSTM(Layer):
             dWf_x += tf.matmul(tf.transpose(AI[t]), df)
             dWo_x += tf.matmul(tf.transpose(AI[t]), do)
             
-            dba += tf.sum(da, axis=0)
-            dbi += tf.sum(di, axis=0)
-            dbf += tf.sum(df, axis=0) 
-            dbo += tf.sum(do, axis=0)
+            dba += tf.reduce_sum(da, axis=0)
+            dbi += tf.reduce_sum(di, axis=0)
+            dbf += tf.reduce_sum(df, axis=0) 
+            dbo += tf.reduce_sum(do, axis=0)
             
             if t > 0:
                 dWa_h += tf.matmul(tf.transpose(h[t-1]), da)

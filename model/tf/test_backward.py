@@ -1,36 +1,38 @@
 
+import tensorflow as tf
 import numpy as np
 
 from Layer import Layer 
 from LSTM import LSTM 
 from Dense import Dense
 
-inputs = np.random.uniform(size=(3, 1, 1))
+X = tf.placeholder(tf.float32, [3, 1, 1])
+Y = tf.placeholder(tf.float32, [1, 112])
 
 l1 = LSTM(input_shape=(3, 1, 1), size=256)
 l2 = LSTM(input_shape=(3, 1, 256), size=256, return_sequences=False)
 l3 = Dense(input_shape=256, size=112)
 
-out1, cache1 = l1.forward(inputs)
+out1, cache1 = l1.forward(X)
 out2, cache2 = l2.forward(out1)
-out3 = l3.forward(out2)
+out3, cache3 = l3.forward(out2)
 
-###############################
+e = out3 - Y
 
-e = out3 - np.random.rand(112)
+back3, grad3 = l3.backward(out2, out3, e, cache3)
+back2, grad2 = l2.backward(out1, out2, back3, cache2)
+back1, grad1 = l1.backward(X, out1, back2, cache1)
 
-###############################
+init = tf.global_variables_initializer()
 
-back3 = l3.backward(out2, out3, e)
-back2 = l2.backward(out1, out2, back3, cache2)
-back1 = l1.backward(inputs, out1, back2, cache1)
+################
 
-'''
-print (np.shape(out1))
-print (np.shape(out2))
-print (np.shape(out3))
+sess = tf.InteractiveSession()
+sess.run(init)
 
-print (np.shape(back3))
-print (np.shape(back2))
-print (np.shape(back1))
-'''
+inputs = np.random.uniform(size=(3, 1, 1))
+labels = np.random.uniform(size=(1, 112))
+[out1, out2, out3] = sess.run([out1, out2, out3], feed_dict={X: inputs, Y: labels})
+
+print (np.shape(out1), np.shape(out2), np.shape(out3))
+
