@@ -26,16 +26,17 @@ def dsigmoid(x):
 
 class LSTM(Layer):
 
-    def __init__(self, input_shape, size, init='glorot_normal', return_sequences=True, dropout_rate=None, name=None):
+    def __init__(self, input_shape, size, init='glorot_normal', return_sequences=True):
         self.input_shape = input_shape
-        self.batch_size, self.time_size, self.input_size = self.input_shape
+        self.time_size, self.batch_size, self.input_size = self.input_shape
         self.output_size = size
         self.init = init
         self.return_sequences = return_sequences
-        self.dropout_rate = tf.constant(0.0) if dropout_rate == None else dropout_rate
-        self.name = name
         
         # print (self.time_size, self.batch_size, self.input_size, self.output_size)
+        
+        ###################
+        
         '''
         Wa_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
         Wi_x = init_matrix(size=(self.input_size, self.output_size), init=self.init)
@@ -68,6 +69,8 @@ class LSTM(Layer):
         bf = np.array([0.15])
         bo = np.array([0.10])
         
+        ###################
+        
         self.Wa_x = tf.Variable(Wa_x, dtype=tf.float32)
         self.Wi_x = tf.Variable(Wi_x, dtype=tf.float32)
         self.Wf_x = tf.Variable(Wf_x, dtype=tf.float32)
@@ -86,48 +89,20 @@ class LSTM(Layer):
     ###################################################################
         
     def get_weights(self):
-        assert(self.name is not None)
-        
-        wax = self.name + '_wax'
-        wix = self.name + '_wix'
-        wfx = self.name + '_wfx'
-        wox = self.name + '_wox'
-        
-        wah = self.name + '_wah'
-        wih = self.name + '_wih'
-        wfh = self.name + '_wfh'
-        woh = self.name + '_woh'
-        
-        ba = self.name + '_ba'
-        bi = self.name + '_bi'
-        bf = self.name + '_bf'
-        bo = self.name + '_bo'
-        
-        wx = [(wax, self.Wa_x), (wix, self.Wi_x), (wfx, self.Wf_x), (wox, self.Wo_x)]
-        wh = [(wah, self.Wa_h), (wih, self.Wi_h), (wfh, self.Wf_h), (woh, self.Wo_h)]
-        b  = [(ba, self.ba), (bi, self.bi), (bf, self.bf), (bo, self.bo)]
-        
-        weights = wx + wh + b
-        return weights
-
-    def params(self):
-        wx = [self.Wa_x, self.Wi_x, self.Wf_x, self.Wo_x]
-        wh = [self.Wa_h, self.Wi_h, self.Wf_h, self.Wo_h]
-        b  = [self.ba, self.bi, self.bf, self.bo]
-        
-        weights = wx + wh + b
-        return weights
+        assert (False)
 
     def num_params(self):
-        wx_size = 4 * self.input_size * self.output_size
-        wh_size = 4 * self.output_size * self.output_size
-        b_size = 4 * self.output_size
-        return wx_size + wh_size + b_size
+        assert (False)
 
     ###################################################################
 
     def forward(self, X):
-        # check shape(X) = batch, time, input
+        # put some tensorflow assertion here to check the shape
+        '''
+        if (np.shape(X) != (self.time_size, self.batch_size, self.input_size)):
+            print (np.shape(X))
+            assert(np.shape(X) == (self.time_size, self.batch_size, self.input_size))
+        '''
         
         la = [None] * self.time_size
         li = [None] * self.time_size
@@ -135,39 +110,39 @@ class LSTM(Layer):
         lo = [None] * self.time_size
         ls = [None] * self.time_size
         lh = [None] * self.time_size
-        ldropout = [None] * self.time_size
         
-        X_T = tf.transpose(X, [1, 0, 2])
-        # X_T = tf.Print(X_T, [tf.shape(X), tf.shape(X_T)], message='LSTM in: ', summarize=1000)        
         for t in range(self.time_size):
-            x = X_T[t]
-            dropout = tf.cast(tf.random_uniform(shape=tf.shape(x)) > self.dropout_rate, tf.float32)
-            # x = dropout * x
-
+            x = X[t]
+            
             if t == 0:
                 a = tanh(   tf.matmul(x, self.Wa_x) + self.ba) 
                 i = sigmoid(tf.matmul(x, self.Wi_x) + self.bi) 
                 f = sigmoid(tf.matmul(x, self.Wf_x) + self.bf)
-                o = sigmoid(tf.matmul(x, self.Wo_x) + self.bo)
-                s = a * i
-                h = tanh(s) * o
+                o = sigmoid(tf.matmul(x, self.Wo_x) + self.bo) 
             else:
                 a = tanh(   tf.matmul(x, self.Wa_x) + tf.matmul(lh[t-1], self.Wa_h) + self.ba)
                 i = sigmoid(tf.matmul(x, self.Wi_x) + tf.matmul(lh[t-1], self.Wi_h) + self.bi)
                 f = sigmoid(tf.matmul(x, self.Wf_x) + tf.matmul(lh[t-1], self.Wf_h) + self.bf)
                 o = sigmoid(tf.matmul(x, self.Wo_x) + tf.matmul(lh[t-1], self.Wo_h) + self.bo)
-                s = a * i + ls[t-1] * f
-                h = tanh(s) * o
 
             la[t] = a
             li[t] = i
             lf[t] = f
             lo[t] = o
-            ls[t] = s            
-            lh[t] = h
-            ldropout[t] = dropout
+            
+            if t == 0:
+                s = a * i               
+            else:
+                s = a * i + ls[t-1] * f
+                
+            h = tanh(s) * o
 
-        outputs = tf.stack(lh, axis=1)
+            ls[t] = s
+            lh[t] = h
+
+        # [T, B, O]
+        outputs = tf.stack(lh, axis=0)
+
         cache = {}
         cache['a'] = la
         cache['i'] = li
@@ -175,7 +150,6 @@ class LSTM(Layer):
         cache['o'] = lo
         cache['s'] = ls
         cache['h'] = lh
-        cache['dropout'] = ldropout
         
         if self.return_sequences:
             return outputs, cache
@@ -186,24 +160,16 @@ class LSTM(Layer):
     # combining backward and train together
     def backward(self, AI, AO, DO, cache):
         if not self.return_sequences:
-            assert (False)
-            '''
             zeros = tf.zeros(shape=(self.time_size - 1, self.batch_size, self.output_size))
             DO = tf.reshape(DO, (1, self.batch_size, self.output_size))
             DO = tf.concat((zeros, DO), axis=0)
-            
-            zeros = tf.zeros(shape=(self.batch_size, self.time_size - 1, self.output_size))
-            DO = tf.reshape(DO, (self.batch_size, 1, self.output_size))
-            DO = tf.concat((zeros, DO), axis=1)
-            '''
-            
+    
         a = cache['a'] 
         i = cache['i'] 
         f = cache['f'] 
         o = cache['o'] 
         s = cache['s'] 
         h = cache['h'] 
-        dropout = cache['dropout']
         
         lds = [None] * self.time_size
         ldx = [None] * self.time_size
@@ -224,26 +190,23 @@ class LSTM(Layer):
         dbf = tf.zeros_like(self.bf)
         dbo = tf.zeros_like(self.bo)
 
-        DO_T = tf.transpose(DO, [1, 0, 2])
-        AI_T = tf.transpose(AI, [1, 0, 2])
-
         for t in range(self.time_size-1, -1, -1):
             if t == 0:
-                dh = DO_T[t] + dout
+                dh = DO[t] + dout
                 ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t+1]
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
                 df = tf.zeros_like(da)
                 do = dh * tanh(s[t]) * dsigmoid(o[t]) 
             elif t == self.time_size-1:
-                dh = DO_T[t]
+                dh = DO[t]
                 ds = dh * o[t] * dtanh(tanh(s[t]))
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
                 df = ds * s[t-1] * dsigmoid(f[t]) 
                 do = dh * tanh(s[t]) * dsigmoid(o[t]) 
             else:
-                dh = DO_T[t] + dout
+                dh = DO[t] + dout
                 ds = dh * o[t] * dtanh(tanh(s[t])) + lds[t+1] * f[t+1]
                 da = ds * i[t] * dtanh(a[t])
                 di = ds * a[t] * dsigmoid(i[t]) 
@@ -262,10 +225,10 @@ class LSTM(Layer):
             dx_o = tf.matmul(do, tf.transpose(self.Wo_x))
             dx = dx_a + dx_i + dx_f + dx_o
             
-            dWa_x += tf.matmul(tf.transpose(AI_T[t]), da)
-            dWi_x += tf.matmul(tf.transpose(AI_T[t]), di)
-            dWf_x += tf.matmul(tf.transpose(AI_T[t]), df)
-            dWo_x += tf.matmul(tf.transpose(AI_T[t]), do)
+            dWa_x += tf.matmul(tf.transpose(AI[t]), da)
+            dWi_x += tf.matmul(tf.transpose(AI[t]), di)
+            dWf_x += tf.matmul(tf.transpose(AI[t]), df)
+            dWo_x += tf.matmul(tf.transpose(AI[t]), do)
             
             dba += tf.reduce_sum(da, axis=0)
             dbi += tf.reduce_sum(di, axis=0)
@@ -277,13 +240,10 @@ class LSTM(Layer):
                 dWi_h += tf.matmul(tf.transpose(h[t-1]), di)
                 dWf_h += tf.matmul(tf.transpose(h[t-1]), df)
                 dWo_h += tf.matmul(tf.transpose(h[t-1]), do)
-
-            # dx = tf.Print(dx, [tf.shape(dx), tf.shape(dropout[t])], message='', summarize=1000)               
+                
             lds[t] = ds
-            ldx[t] = dx 
+            ldx[t] = dx
             ldout[t] = dout
-
-        ldx = tf.stack(ldx, axis=1)
 
         dw = [
         (dWa_x, self.Wa_x), (dWi_x, self.Wi_x), (dWf_x, self.Wf_x), (dWo_x, self.Wo_x),
